@@ -1,6 +1,16 @@
 defmodule Org do
   @moduledoc """
-  Documentation for Org.
+  This package implements an org-mode lexer and parser.
+
+  org-mode is the markup language used by the powerful [org mode package for emacs](http://orgmode.org/).
+
+  This implementation supports only a small subset of the syntax at this point, but can already be useful for extracting information from well-formed documents.
+
+  Features supported are:
+  - Comments
+  - (nested) Sections
+  - Paragraphs
+  - Tables
   """
 
   @doc "Loads a from a file at given path"

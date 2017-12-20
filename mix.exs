@@ -7,7 +7,19 @@ defmodule Org.Mixfile do
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
-      deps: deps()
+      package: package(),
+      deps: deps(),
+      description: "org-mode parser",
+    ]
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      maintainers: ["Niklas Cathor"],
+      links: %{
+        "GitHub" => "https://github.com/nilclass/elixir_org"
+      }
     ]
   end
 
