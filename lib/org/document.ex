@@ -7,6 +7,13 @@ defmodule Org.Document do
     contents: list(Org.Content.t),
   }
 
+  @moduledoc ~S"""
+  Represents an interpreted document.
+
+  Documents are organized as a tree of sections, each of which has a title and optional contents.
+  The document can also have contents at the top level.
+  """
+
   @doc "Retrieve current contents of document"
   def contents(%Org.Document{contents: contents}) do
     contents

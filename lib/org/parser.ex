@@ -1,21 +1,35 @@
 defmodule Org.Parser do
   defstruct doc: %Org.Document{}, mode: nil
 
+  @type t :: %Org.Parser{
+    doc: Org.Document.t,
+    mode: :paragraph | :table | nil,
+  }
+
+  @moduledoc ~S"""
+  Parses a text or list of tokens into an `Org.Document`.
+
+  By calling `parse/1`, the lexer is invoked first.
+  To parse a file that has already been lexed, pass the tokens to `parse_tokens/2` directly.
+  """
+
+  @spec parse(String.t) :: Org.Document.t
   def parse(text) do
     text
     |> Org.Lexer.lex
     |> parse_tokens
-    |> finalize
-    |> Map.get(:doc)
   end
 
-  defp parse_tokens(parser \\ %Org.Parser{}, tokens)
+  @spec parse_tokens(Org.Parser.t, list(Org.Lexer.token)) :: Org.Document.t
+  def parse_tokens(parser \\ %Org.Parser{}, tokens)
 
-  defp parse_tokens(parser, []) do
+  def parse_tokens(parser, []) do
     parser
+    |> Map.get(:doc)
+    |> Org.Document.reverse_recursive
   end
 
-  defp parse_tokens(parser, [token | rest]) do
+  def parse_tokens(parser, [token | rest]) do
     token
     |> parse_token(parser)
     |> parse_tokens(rest)
@@ -55,9 +69,5 @@ defmodule Org.Parser do
     end
 
     %Org.Parser{parser | doc: doc, mode: :table}
-  end
-
-  defp finalize(parser) do
-    %Org.Parser{doc: Org.Document.reverse_recursive(parser.doc)}
   end
 end

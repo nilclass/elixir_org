@@ -1,10 +1,20 @@
 defmodule Org.Lexer do
   defstruct tokens: []
 
+  @type token :: (
+    {:comment, String.t} |
+    {:section_title, integer, String.t} |
+    {:table_row, list(String.t)} |
+    {:empty_line} |
+    {:text, String.t}
+  )
+
+  @type t :: %Org.Lexer{tokens: list(token)}
+
   @moduledoc ~S"""
   Splits an org-document into tokens.
 
-  For many simple tasks, using the lexer is enough, and a full-fledged Org.Document is not needed.
+  For many simple tasks, using the lexer is enough, and a full-fledged `Org.Document` is not needed.
 
   Usage example:
       iex> source = "#+TITLE: Greetings\n\n* Hello\n** World\n** Universe\n* Goodbye\n"
@@ -16,10 +26,9 @@ defmodule Org.Lexer do
        {:section_title, 2, "Universe"},
        {:section_title, 1, "Goodbye"},
        {:empty_line}]
-
-  Token types: 
   """
 
+  @spec lex(String.t) :: list(token)
   def lex(text) do
     text
     |> String.split("\n")
