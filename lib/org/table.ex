@@ -1,14 +1,19 @@
 
 defmodule Org.Table.Row do
   defstruct cells: []
+  @type t :: %Org.Table.Row{cells: list(String.t)}
 end
 
 defmodule Org.Table.Separator do
   defstruct []
+  @type t :: %Org.Table.Separator{}
 end
 
 defmodule Org.Table do
   defstruct rows: []
+
+  @type row :: Org.Table.Row.t | Org.Table.Separator.t
+  @type t :: %Org.Table{rows: list(row)}
 
   @moduledoc ~S"""
   Represents a table.
@@ -46,6 +51,7 @@ defmodule Org.Table do
       iex> table.rows
       [%Org.Table.Row{cells: ["foo"]}, %Org.Table.Separator{}, %Org.Table.Row{cells: ["bar"]}]
   """
+  @spec new(list(row | list(String.t))) :: t
   def new(rows) do
     %Org.Table{rows: Enum.map(rows, &cast_row/1)}
   end
@@ -56,6 +62,7 @@ defmodule Org.Table do
   This function is used by the parser, which builds up documents in reverse and then finally
   calls Org.Content.reverse_recursive/1 to yield the original order.
   """
+  @spec prepend_row(t, row) :: t
   def prepend_row(table, row) do
     %Org.Table{table | rows: [cast_row(row) | table.rows]}
   end
@@ -68,6 +75,7 @@ defmodule Org.Table do
       iex> Org.Table.skip_rows(table, 1)
       %Org.Table{rows: [%Org.Table.Row{cells: ["7", "4"]}, %Org.Table.Row{cells: ["3", "8"]}, %Org.Table.Row{cells: ["15", "24"]}]}
   """
+  @spec skip_rows(t, integer) :: t
   def skip_rows(table, 0) do
     table
   end
@@ -84,6 +92,7 @@ defmodule Org.Table do
       iex> Org.Table.extract_rows(table, [:parameter_name, :value])
       [%{parameter_name: "Width", value: "20"}, %{parameter_name: "Height", value: "40"}]
   """
+  @spec extract_rows(t, list(any)) :: list(map)
   def extract_rows(table, keys) do
     for %Org.Table.Row{cells: cells} <- table.rows do
       keys
