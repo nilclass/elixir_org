@@ -13,17 +13,25 @@ defmodule Org do
   - Tables
   """
 
+  @type load_mode :: :document | :tokens
+
   @doc "Loads a document from a file at given path"
-  @spec load_file(String.t) :: Org.Document.t
-  def load_file(path) do
+  @spec load_file(String.t, load_mode) :: Org.Document.t
+  def load_file(path, load_mode \\ :document) do
     {:ok, data} = File.read(path)
-    Org.Parser.parse(data)
+    load_string(data, load_mode)
   end
 
   @doc "Loads a document from the given source string"
-  @spec load_string(String.t) :: Org.Document.t
-  def load_string(data) do
+  @spec load_string(String.t, load_mode) :: Org.Document.t
+  def load_string(data, load_mode \\ :document)
+
+  def load_string(data, :document) do
     Org.Parser.parse(data)
+  end
+
+  def load_string(data, :tokens) do
+    Org.Lexer.lex(data)
   end
 
   @doc ~S"""
@@ -53,7 +61,7 @@ defmodule Org do
   """
   @spec tables(Org.Section.t | Org.Document.t) :: list(Org.Table.t)
   def tables(section_or_document) do
-    for %Org.Table{} = t <- Org.contents(section_or_document), do: t
+    for %Org.Table{} = table <- Org.contents(section_or_document), do: table
   end
 
   @doc ~S"""
@@ -64,9 +72,9 @@ defmodule Org do
       iex> Org.paragraphs(doc)
       [%Org.Paragraph{lines: ["First paragraph"]}, %Org.Paragraph{lines: ["Second paragraph"]}]
   """
-  @spec tables(Org.Section.t | Org.Document.t) :: list(Org.Paragraph.t)
+  @spec paragraphs(Org.Section.t | Org.Document.t) :: list(Org.Paragraph.t)
   def paragraphs(section_or_document) do
-    for %Org.Paragraph{} = p <- Org.contents(section_or_document), do: p
+    for %Org.Paragraph{} = paragraph <- Org.contents(section_or_document), do: paragraph
   end
 
   @doc "Extracts all contents from given section or document"

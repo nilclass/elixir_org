@@ -50,12 +50,12 @@ defmodule Org.Section do
     raise "Section not found with remaining path: #{inspect path}"
   end
 
-  def find_by_path([%Org.Section{title: x} = matching_section | _], [x | rest_path]) do
-    if length(rest_path) == 0 do
-      matching_section
-    else
-      find_by_path(matching_section.children, rest_path)
-    end
+  def find_by_path([%Org.Section{title: title} = matching_section | _], [title]) do
+    matching_section
+  end
+
+  def find_by_path([%Org.Section{title: title} = matching_section | _], [title | rest_path]) do
+    find_by_path(matching_section.children, rest_path)
   end
 
   def find_by_path([_ | rest], path) do
