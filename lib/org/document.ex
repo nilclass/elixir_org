@@ -24,6 +24,9 @@ defmodule Org.Document do
     %Org.Document{doc | comments: [comment | doc.comments]}
   end
 
+  @doc "Prepend a subsection at the given level."
+  def add_subsection(doc, level, title)
+
   def add_subsection(doc, 1, title) do
     %Org.Document{doc | sections: [%Org.Section{title: title} | doc.sections]}
   end
@@ -86,7 +89,11 @@ defmodule Org.Document do
     }
   end
 
-  @doc "Prepend content to the currently deepest section, or toplevel if no sections exist."
+  @doc ~S"""
+  Prepend content to the currently deepest section, or toplevel if no sections exist.
+
+  See documentation of `reverse_recursive/1` for a usage example.
+  """
   def prepend_content(%Org.Document{sections: []} = doc, content) do
     %Org.Document{doc | contents: [content | doc.contents]}
   end
@@ -95,7 +102,11 @@ defmodule Org.Document do
     %Org.Document{doc | sections: [Org.Section.prepend_content(current_section, content) | rest]}
   end
 
-  @doc "Update the last prepended content. Yields the content to the given updater."
+  @doc ~S"""
+  Update the last prepended content. Yields the content to the given updater.
+
+  See documentation of `reverse_recursive/1` for a usage example.
+  """
   def update_content(%Org.Document{sections: [], contents: [current_content | rest]} = doc, updater) do
     %Org.Document{doc | contents: [updater.(current_content) | rest]}
   end

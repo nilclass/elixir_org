@@ -38,7 +38,12 @@ defmodule Org do
   Extracts a section at the given path of titles
 
   Example:
-      iex> doc = Org.load_string("* First\n** Second\n*** Third\n* Fourth\n")
+      iex> doc = Org.load_string(~S{
+      ...>* First
+      ...>** Second
+      ...>*** Third
+      ...>* Fourth
+      iex>})
       iex> Org.section(doc, ["First"]).title
       "First"
       iex> Org.section(doc, ["First", "Second", "Third"]).title
@@ -55,7 +60,12 @@ defmodule Org do
   Extracts all tables from the given section or document
 
   Example:
-      iex> doc = Org.load_string("First paragraph\n| x | y |\n| 1 | 7 |\nSecond paragraph")
+      iex> doc = Org.load_string(~S{
+      ...>First paragraph
+      ...>| x | y |
+      ...>| 1 | 7 |
+      ...>Second paragraph
+      ...>})
       iex> Org.tables(doc)
       [%Org.Table{rows: [%Org.Table.Row{cells: ["x", "y"]}, %Org.Table.Row{cells: ["1", "7"]}]}]
   """
@@ -68,7 +78,12 @@ defmodule Org do
   Extracts all paragraphs from the given section or document
 
   Example:
-      iex> doc = Org.load_string("First paragraph\n| x | y |\n| 1 | 7 |\nSecond paragraph")
+      iex> doc = Org.load_string(~S{
+      ...>First paragraph
+      ...>| x | y |
+      ...>| 1 | 7 |
+      ...>Second paragraph
+      ...>})
       iex> Org.paragraphs(doc)
       [%Org.Paragraph{lines: ["First paragraph"]}, %Org.Paragraph{lines: ["Second paragraph"]}]
   """
