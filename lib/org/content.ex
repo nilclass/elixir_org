@@ -3,6 +3,7 @@ defprotocol Org.Content do
   Represents a piece of content, such as:
   * `Org.Table`
   * `Org.Paragraph`
+  * `Org.CodeBlock`
   """
 
   @doc "Reverses the content's elements. Used by the parser after building up content in reverse."

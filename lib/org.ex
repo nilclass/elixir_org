@@ -11,6 +11,7 @@ defmodule Org do
   - (nested) Sections
   - Paragraphs
   - Tables
+  - Code blocks
   """
 
   @type load_mode :: :document | :tokens
@@ -72,6 +73,39 @@ defmodule Org do
   @spec tables(Org.Section.t | Org.Document.t) :: list(Org.Table.t)
   def tables(section_or_document) do
     for %Org.Table{} = table <- Org.contents(section_or_document), do: table
+  end
+
+  @doc ~S"""
+  Extracts all code blocks from the given section or document
+
+  Example:
+      iex> doc = Org.load_string(~S{
+      ...>First example:
+      ...>
+      ...>#+BEGIN_SRC emacs-lisp -n 10
+      ...>(message "Hello World!")
+      ...>(message "...")
+      ...>#+END_SRC
+      ...>
+      ...>Second example:
+      ...>
+      ...>#+BEGIN_SRC org-mode
+      ...>* Nested document
+      ...>This is a nested document.
+      ...>
+      ...>| With   | a      |
+      ...>| nested | table. |
+      ...>
+      ...>It will not be parsed.
+      ...>#+END_SRC
+      ...>
+      ...>})
+      iex> Org.code_blocks(doc)
+      [%Org.CodeBlock{lang: "emacs-lisp", details: "-n 10", lines: ["(message \"Hello World!\")", "(message \"...\")"]},
+       %Org.CodeBlock{lang: "org-mode", details: "", lines: ["* Nested document", "This is a nested document.", "", "| With   | a      |", "| nested | table. |", "", "It will not be parsed."]}]
+  """
+  def code_blocks(section_or_document) do
+    for %Org.CodeBlock{} = code_block <- Org.contents(section_or_document), do: code_block
   end
 
   @doc ~S"""

@@ -3,7 +3,7 @@ defmodule Org.Parser do
 
   @type t :: %Org.Parser{
     doc: Org.Document.t,
-    mode: :paragraph | :table | nil,
+    mode: :paragraph | :table | :code_block | nil,
   }
 
   @moduledoc ~S"""
@@ -69,5 +69,23 @@ defmodule Org.Parser do
     end
 
     %Org.Parser{parser | doc: doc, mode: :table}
+  end
+
+  defp parse_token({:begin_src, lang, details}, parser) do
+    doc = Org.Document.prepend_content(parser.doc, Org.CodeBlock.new(lang, details))
+
+    %Org.Parser{parser | doc: doc, mode: :code_block}
+  end
+
+  defp parse_token({:raw_line, line}, %Org.Parser{mode: :code_block} = parser) do
+    doc = Org.Document.update_content(parser.doc, fn code_block ->
+      Org.CodeBlock.prepend_line(code_block, line)
+    end)
+
+    %Org.Parser{parser | doc: doc}
+  end
+
+  defp parse_token({:end_src}, %Org.Parser{mode: :code_block} = parser) do
+    %Org.Parser{parser | mode: nil}
   end
 end

@@ -1,5 +1,5 @@
 defmodule Org.Lexer do
-  defstruct tokens: []
+  defstruct tokens: [], mode: :normal
 
   @type token :: (
     {:comment, String.t} |
@@ -9,7 +9,10 @@ defmodule Org.Lexer do
     {:text, String.t}
   )
 
-  @type t :: %Org.Lexer{tokens: list(token)}
+  @type t :: %Org.Lexer{
+    tokens: list(token),
+    mode: :normal | :raw
+  }
 
   @moduledoc ~S"""
   Splits an org-document into tokens.
@@ -49,31 +52,50 @@ defmodule Org.Lexer do
     |> lex_lines(rest)
   end
 
+  @begin_src_re     ~r/^#\+BEGIN_SRC(?:\s+([^\s]*)\s?(.*)|)$/
+  @end_src_re       ~r/^#\+END_SRC$/
   @comment_re       ~r/^#(.+)$/
   @section_title_re ~r/^(\*+) (.+)$/
   @empty_line_re    ~r/^\s*$/
   @table_row_re     ~r/^\s*(?:\|[^|]*)+\|\s*$/
 
-  defp lex_line(line, lexer) do
-    token = cond do
+  defp lex_line(line, %Org.Lexer{mode: :normal} = lexer) do
+    cond do
+      match = Regex.run(@begin_src_re, line) ->
+        [_, lang, details] = match
+        append_token(lexer, {:begin_src, lang, details}) |> set_mode(:raw)
       match = Regex.run(@comment_re, line) ->
         [_, text] = match
-        {:comment, text}
+        append_token(lexer, {:comment, text})
       match = Regex.run(@section_title_re, line) ->
         [_, nesting, title] = match
-        {:section_title, String.length(nesting), title}
+        append_token(lexer, {:section_title, String.length(nesting), title})
       Regex.run(@empty_line_re, line) ->
-        {:empty_line}
+        append_token(lexer, {:empty_line})
       Regex.run(@table_row_re, line) ->
         cells = ~r/\|(?<cell>[^|]+)/
         |> Regex.scan(line, capture: :all_names)
         |> List.flatten
         |> Enum.map(&String.trim/1)
-        {:table_row, cells}
+        append_token(lexer, {:table_row, cells})
       true ->
-        {:text, line}
+        append_token(lexer, {:text, line})
     end
+  end
 
+  defp lex_line(line, %Org.Lexer{mode: :raw} = lexer) do
+    if Regex.run(@end_src_re, line) do
+      append_token(lexer, {:end_src}) |> set_mode(:normal)
+    else
+      append_token(lexer, {:raw_line, line})
+    end
+  end
+
+  defp append_token(%Org.Lexer{} = lexer, token) do
     %Org.Lexer{lexer | tokens: [token | lexer.tokens]}
+  end
+
+  defp set_mode(%Org.Lexer{} = lexer, mode) do
+    %Org.Lexer{lexer | mode: mode}
   end
 end

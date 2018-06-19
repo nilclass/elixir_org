@@ -23,7 +23,13 @@ defmodule Org.ParserTest do
       {["Also", "at", "next"], ["10"]},
       {["Also", "at", "to"], ["11"]},
       {["Also", "at", "one"], ["12"]},
-      {["Also", "at", "another"], ["13"]},
     ])
+
+    test "section with paragraph and code", %{doc: doc} do
+      assert Org.Section.contents(Org.section(doc, ["Also", "at", "another"])) == [
+        %Org.Paragraph{lines: ["13"]},
+        %Org.CodeBlock{lang: "sql", details: "", lines: ["SELECT * FROM products;"]},
+      ]
+    end
   end
 end

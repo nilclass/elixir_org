@@ -41,6 +41,9 @@ defmodule OrgTest do
   12
   *** another
   13
+  #+BEGIN_SRC sql
+  SELECT * FROM products;
+  #+END_SRC
   """
 
   # Used by Org.LexerTest and Org.ParserTest

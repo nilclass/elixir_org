@@ -49,6 +49,9 @@ defmodule Org.LexerTest do
       {:text, "12"},
       {:section_title, 3, "another"},
       {:text, "13"},
+      {:begin_src, "sql", ""},
+      {:raw_line, "SELECT * FROM products;"},
+      {:end_src},
       {:empty_line}
     ]
   end
