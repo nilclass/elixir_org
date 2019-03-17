@@ -20,6 +20,13 @@ defmodule OrgTest do
   ** another
   2
   *** thing
+      :PROPERTIES:
+      :Title:     Goldberg Variations
+      :Composer:  J.S. Bach
+      :Artist:    Glenn Gould
+      :Publisher: Deutsche Grammophon
+      :NDisks:    1
+      :END:
   3
   **** is nesting
   4

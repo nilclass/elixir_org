@@ -3,7 +3,7 @@ defmodule Org.Parser do
 
   @type t :: %Org.Parser{
     doc: Org.Document.t,
-    mode: :paragraph | :table | :code_block | nil,
+    mode: :paragraph | :properties | :table | :code_block | nil,
   }
 
   @moduledoc ~S"""
@@ -86,6 +86,20 @@ defmodule Org.Parser do
   end
 
   defp parse_token({:end_src}, %Org.Parser{mode: :code_block} = parser) do
+    %Org.Parser{parser | mode: nil}
+  end
+
+  defp parse_token({:begin_drawer, "PROPERTIES"}, parser) do
+    %Org.Parser{parser | mode: :properties}
+  end
+
+  defp parse_token({:property, key, value}, %Org.Parser{mode: :properties} = parser) do
+    doc = Org.Document.prepend_property(parser.doc, {key |> String.to_atom(), value})
+
+    %Org.Parser{parser | doc: doc}
+  end
+
+  defp parse_token({:end_drawer}, %Org.Parser{mode: :properties} = parser) do
     %Org.Parser{parser | mode: nil}
   end
 end

@@ -11,7 +11,7 @@ defmodule Org.Lexer do
 
   @type t :: %Org.Lexer{
     tokens: list(token),
-    mode: :normal | :raw
+    mode: :normal | :raw | :property
   }
 
   @moduledoc ~S"""
@@ -58,6 +58,9 @@ defmodule Org.Lexer do
   @section_title_re ~r/^(\*+) (.+)$/
   @empty_line_re    ~r/^\s*$/
   @table_row_re     ~r/^\s*(?:\|[^|]*)+\|\s*$/
+  @begin_props_re   ~r/^\s*\:PROPERTIES\:$/
+  @property_re      ~r/^\s*\:([A-Za-z]+)\:\s*(.+)$/
+  @end_drawer_re    ~r/^\s*\:END\:$/
 
   defp lex_line(line, %Org.Lexer{mode: :normal} = lexer) do
     cond do
@@ -78,6 +81,8 @@ defmodule Org.Lexer do
         |> List.flatten
         |> Enum.map(&String.trim/1)
         append_token(lexer, {:table_row, cells})
+      Regex.run(@begin_props_re, line) ->
+        append_token(lexer, {:begin_drawer, "PROPERTIES"}) |> set_mode(:property)
       true ->
         append_token(lexer, {:text, line})
     end
@@ -88,6 +93,16 @@ defmodule Org.Lexer do
       append_token(lexer, {:end_src}) |> set_mode(:normal)
     else
       append_token(lexer, {:raw_line, line})
+    end
+  end
+
+  defp lex_line(line, %Org.Lexer{mode: :property} = lexer) do
+    cond do
+      Regex.run(@end_drawer_re, line) ->
+        append_token(lexer, {:end_drawer}) |> set_mode(:normal)
+      match = Regex.run(@property_re, line) ->
+        [_, key, value] = match
+        append_token(lexer, {:property, key, value})
     end
   end
 

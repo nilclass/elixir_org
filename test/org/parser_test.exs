@@ -31,5 +31,15 @@ defmodule Org.ParserTest do
         %Org.CodeBlock{lang: "sql", details: "", lines: ["SELECT * FROM products;"]},
       ]
     end
+
+    test "section with properties", %{doc: doc} do
+      assert Org.section(doc, ["Also", "another", "thing"]).properties == [
+        {:Title, "Goldberg Variations"},
+        {:Composer, "J.S. Bach"},
+        {:Artist, "Glenn Gould"},
+        {:Publisher, "Deutsche Grammophon"},
+        {:NDisks, "1"},
+      ]
+    end
   end
 end
