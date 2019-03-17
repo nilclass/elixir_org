@@ -1,11 +1,11 @@
 defmodule Org.Section do
-  defstruct title: "", children: [], contents: []
+  defstruct title: "", children: [], contents: [], properties: []
 
   @moduledoc ~S"""
   Represents a section of a document with a title and possible contents & subsections.
 
   Example:
-      iex> source = "* Hello\nWorld\n** What's up?\nNothing much.\n** How's it going?\nAll fine, whow are you?\n"
+      iex> source = "* Hello\nWorld\n** What's up?\n   :PROPERTIES:\n   :Register: non-formal\n   :Intent: inquisitive\n   :END:\nNothing much.\n** How's it going?\nAll fine, whow are you?\n"
       iex> doc = Org.Parser.parse(source)
       iex> section = Org.section(doc, ["Hello"])
       iex> section.contents
@@ -14,12 +14,16 @@ defmodule Org.Section do
       2
       iex> for child <- section.children, do: child.title
       ["What's up?", "How's it going?"]
+      iex> subsection_with_props = Org.section(doc, ["Hello", "What's up?"])
+      iex> subsection_with_props.properties
+      [Register: "non-formal", Intent: "inquisitive"]
   """
 
   @type t :: %Org.Section{
     title: String.t,
     children: list(Org.Section.t),
     contents: list(Org.Content.t),
+    properties: list(Keyword.t),
   }
 
   def add_nested(parent, 1, child) do
@@ -39,6 +43,7 @@ defmodule Org.Section do
       section |
       children: Enum.reverse(Enum.map(section.children, &reverse_recursive/1)),
       contents: Enum.reverse(Enum.map(section.contents, &Org.Content.reverse_recursive/1)),
+      properties: Enum.reverse(section.properties),
     }
   end
 
@@ -81,5 +86,14 @@ defmodule Org.Section do
 
   def update_content(%Org.Section{children: [current_section | rest]} = section, updater) do
     %Org.Section{section | children: [update_content(current_section, updater) | rest]}
+  end
+
+  @doc "Adds property to the last prepended section"
+  def prepend_property(%Org.Section{children: []} = section, property) do
+    %Org.Section{section | properties: [property | section.properties]}
+  end
+
+  def prepend_property(%Org.Section{children: [current_child | children]} = section, property) do
+    %Org.Section{section | children: [prepend_property(current_child, property) | children]}
   end
 end

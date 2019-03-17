@@ -102,6 +102,22 @@ defmodule Org.Document do
     %Org.Document{doc | sections: [Org.Section.prepend_content(current_section, content) | rest]}
   end
 
+
+  @doc ~S"""
+  Prepend property to the currently deepest section.
+
+  While preserving order is usually not needed for parsing and
+  interpreting properties, order is still preserved here to e.g. allow
+  re-serialization that preserves line order. This would be desirable
+  e.g. since version control is often based on lines, and works better
+  if there is less noise in the commit history.
+
+  See prepend_content for usage.
+  """
+  def prepend_property(%Org.Document{sections: [current_section | rest]} = doc, property) do
+    %Org.Document{doc | sections: [Org.Section.prepend_property(current_section, property) | rest]}
+  end
+
   @doc ~S"""
   Update the last prepended content. Yields the content to the given updater.
 
